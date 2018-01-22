@@ -3,6 +3,8 @@ import pandas as pd
 import spacy
 import pickle
 
+nlp = spacy.load("en")
+
 def loadQuestionsFromTrainDF():
     df = pd.read_csv("..\\data\\train.csv")
     return df["comment_text"],df["toxic"],df["severe_toxic"],df["obscene"],df["threat"],df["insult"],df["identity_hate"]
@@ -11,23 +13,39 @@ def loadQuestionsFromTestDF():
     df = pd.read_csv("..\\data\\test.csv")
     return df["id"],df["comment_text"]
 
-def lemmatize_text():
-    comments, toxic_sets, severe_toxic_sets, obscene_sets, threat_sets, insult_sets, identity_hate_sets = loadQuestionsFromTrainDF()
-    nlp = spacy.load("en")
 
+def lemmatize_text(comments):
     lemmatized_comments = []
-    for i,text in enumerate(comments):
+
+    for i, text in enumerate(comments):
         print(i)
-        token = nlp(text)
-        lemmatized_token = " ".join([tok.lemma_ if tok.lemma_ != '-PRON-' else str(tok) for tok in token ])
-        lemmatized_comments.append(lemmatized_token)
+        if i != 46573:
+            token = nlp(text)
+            lemmatized_token = " ".join([tok.lemma_ if tok.lemma_ != '-PRON-' else str(tok) for tok in token])
+            lemmatized_comments.append(lemmatized_token)
 
     print(len(lemmatized_comments))
+    return lemmatized_comments
+
+
+def lemmatize_train_text():
+    comments, toxic_sets, severe_toxic_sets, obscene_sets, threat_sets, insult_sets, identity_hate_sets = loadQuestionsFromTrainDF()
+
+    lemmatized_comments = lemmatize_text(comments)
 
     dataframe = (lemmatized_comments, toxic_sets, severe_toxic_sets, obscene_sets, threat_sets, insult_sets, identity_hate_sets)
-    pickle.dump(dataframe, open("lemmatized_dataframe.pkl","wb"))
+    pickle.dump(dataframe, open("lemmatized_train_dataframe.pkl","wb"))
 
-lemmatize_text()
+def lemmatize_test_text():
+    comments = loadQuestionsFromTestDF()[1]
+    lemmatized_comments = lemmatize_text(comments)
+    pickle.dump(lemmatized_comments, open("lemmatized_test_dataframe.pkl","wb"))
+
+#def train_model():
+#cd     training_dataf
+
+#46573-to be done since it was big doc
+lemmatize_test_text()
 
 
 
