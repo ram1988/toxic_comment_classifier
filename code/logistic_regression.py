@@ -1,7 +1,7 @@
 import numpy as np
 import nltk
 from multiprocessing import Pool
-
+import pickle
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer,TfidfVectorizer
@@ -16,9 +16,11 @@ from classifier import Classifier
 class LogisticRegressor(Classifier):
 
 
+    def __init__(self):
+        self.logistic_classifier = pickle.load(open("../data/logistic_model.pkl","rb"))
+
 
     def train_model(self,trained_features,targets):
-
         self.logistic_classifier = []
 
         parameters = {
@@ -48,13 +50,12 @@ class LogisticRegressor(Classifier):
         return self.logistic_classifier
 
     def predict(self,test_features):
-        test_vectors = self.vectorizer.transform(test_features)
-
         test_outputs = []
-        for test_vec in test_vectors:
+        for test_vec in test_features:
             for i,logis in enumerate(self.logistic_classifier):
                 predictions = {}
-                pred = logis.predict(test_vec)
+                pred = logis.predict_proba([test_vec])
+                print(pred)
                 predictions[i] = pred
                 test_outputs.append(predictions)
 
