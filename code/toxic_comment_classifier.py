@@ -47,6 +47,7 @@ def lemmatize_test_text():
     lemmatized_comments = lemmatize_text(comments)
     return
 
+#train without stopwords with non-lemmatized text
 def train_model():
     training_data = pd.read_pickle("../data/lemmatized_dataframe.pkl")
 
