@@ -1,7 +1,7 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 
-class Classifier(ABCMeta):
+class Classifier(ABC):
 
     @abstractmethod
     def train_model(self,trained_features,targets):
