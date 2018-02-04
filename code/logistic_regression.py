@@ -1,33 +1,51 @@
 import numpy as np
 import nltk
+from multiprocessing import Pool
 
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer,TfidfVectorizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+
 
 from classifier import Classifier
 
-class LogisticRegression(Classifier):
+class LogisticRegressor(Classifier):
 
-
-
-    def __prepare_tfidf_vectorizer(self,text_features):
-        self.vectorizer = TfidfVectorizer(max_features=50000, lowercase=True, analyzer='word',
-                                    stop_words='english', ngram_range=(1, 3), dtype=np.float32)
-        return self.vectorizer.fit_transform(text_features)
 
 
     def train_model(self,trained_features,targets):
-        trained_vectors = self.__prepare_tfidf_vectorizer(trained_features)
 
         self.logistic_classifier = []
 
-        for target in targets:
-            logis = LogisticRegression(C=0.001)
-            logis.fit(trained_vectors,target)
-            self.logistic_classifier.append(logis)
+        parameters = {
+            'tfidf__max_features': (5000, 10000, 25000),
+            'tfidf__use_idf': (True,False),
+            'logis__C':(0.001,0.005)
+        }
+
+        for i,target in enumerate(targets):
+            pipeline = Pipeline([
+                ('tfidf', TfidfVectorizer()),
+                ('logis', LogisticRegression()),
+            ])
+
+            print("Training the model-->"+str(i))
+            grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1, verbose=1)
+
+            grid_search.fit(trained_features,target)
+            self.logistic_classifier.append(grid_search.best_estimator_)
+            print("Best score: %0.3f" % grid_search.best_score_)
+            print("Best parameters set:")
+            best_parameters = grid_search.best_estimator_.get_params()
+            for param_name in sorted(parameters.keys()):
+                print("\t%s: %r" % (param_name, best_parameters[param_name]))
+
+
+        return self.logistic_classifier
 
     def predict(self,test_features):
         test_vectors = self.vectorizer.transform(test_features)
