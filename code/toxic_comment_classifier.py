@@ -12,9 +12,14 @@ def loadQuestionsFromTrainDF():
     return df["comment_text"],df["toxic"],df["severe_toxic"],df["obscene"],df["threat"],df["insult"],df["identity_hate"]
 
 def loadQuestionsFromTestDF():
-    df = pd.read_csv("..\\data\\test.csv")
+    df = pd.read_csv("../data/test.csv")
     return df["id"],df["comment_text"]
 
+
+def lemmatize(text):
+    token = nlp(text)
+    lemmatized_token = " ".join([tok.lemma_ if tok.lemma_ != '-PRON-' else str(tok) for tok in token])
+    return lemmatized_token
 
 def lemmatize_text(comments):
     lemmatized_comments = []
@@ -22,8 +27,7 @@ def lemmatize_text(comments):
     for i, text in enumerate(comments):
         print(i)
         if i != 46573:
-            token = nlp(text)
-            lemmatized_token = " ".join([tok.lemma_ if tok.lemma_ != '-PRON-' else str(tok) for tok in token])
+            lemmatized_token = lemmatize(text)
             lemmatized_comments.append(lemmatized_token)
 
     print(len(lemmatized_comments))
@@ -41,7 +45,7 @@ def lemmatize_train_text():
 def lemmatize_test_text():
     comments = loadQuestionsFromTestDF()[1]
     lemmatized_comments = lemmatize_text(comments)
-    pickle.dump(lemmatized_comments, open("lemmatized_test_dataframe.pkl","wb"))
+    return
 
 def train_model():
     training_data = pd.read_pickle("../data/lemmatized_dataframe.pkl")
@@ -61,11 +65,21 @@ def train_model():
 
     pickle.dump(logis,open("logistic_model.pkl","wb"))
 
+def predict():
+    comments = loadQuestionsFromTestDF()[1]
+    logis = LogisticRegressor()
+
+    for i,text in enumerate(comments):
+        print(i)
+        text = str(lemmatize(text))
+        print(text)
+        logis.predict([text])
+
 #46573-to be done since it was big doc
 #lemmatize_test_text()
 
-train_model()
-
+#train_model()
+predict()
 
 
 
