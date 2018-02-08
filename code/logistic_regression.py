@@ -3,10 +3,9 @@ import nltk
 from multiprocessing import Pool
 import pickle
 
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer,TfidfVectorizer
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
@@ -16,22 +15,21 @@ from classifier import Classifier
 class LogisticRegressor(Classifier):
 
 
-    #def __init__(self):
-        #self.logistic_classifier = pickle.load(open("../data/logistic_model.pkl","rb"))
+    def __init__(self):
+        self.logistic_classifier = pickle.load(open("../data/logistic_model.pkl","rb"))
 
 
     def train_model(self,trained_features,targets):
         self.logistic_classifier = []
 
         parameters = {
-            'tfidf__max_features': (25000,50000),
             'tfidf__use_idf': (True,False),
             'logis__C':(0.001,0.005)
         }
 
         for i,target in enumerate(targets):
             pipeline = Pipeline([
-                ('tfidf', TfidfVectorizer()),
+                ('tfidf', TfidfVectorizer(max_features=50000)),
                 ('logis', LogisticRegression()),
             ])
 
