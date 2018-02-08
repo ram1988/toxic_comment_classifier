@@ -16,15 +16,15 @@ from classifier import Classifier
 class LogisticRegressor(Classifier):
 
 
-    def __init__(self):
-        self.logistic_classifier = pickle.load(open("../data/logistic_model.pkl","rb"))
+    #def __init__(self):
+        #self.logistic_classifier = pickle.load(open("../data/logistic_model.pkl","rb"))
 
 
     def train_model(self,trained_features,targets):
         self.logistic_classifier = []
 
         parameters = {
-            'tfidf__max_features': (5000, 10000, 25000),
+            'tfidf__max_features': (25000,50000),
             'tfidf__use_idf': (True,False),
             'logis__C':(0.001,0.005)
         }
