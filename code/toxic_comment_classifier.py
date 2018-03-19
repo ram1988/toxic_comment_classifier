@@ -15,7 +15,7 @@ def loadQuestionsFromTrainDF():
     return df["comment_text"],df["toxic"],df["severe_toxic"],df["obscene"],df["threat"],df["insult"],df["identity_hate"]
 
 def loadQuestionsFromTestDF():
-    df = pd.read_csv("../data/test.csv")
+    df = pd.read_csv("data\\test.csv")
     return df["id"],df["comment_text"]
 
 
@@ -28,7 +28,7 @@ def remove_stop_words(comments):
     cleaned_comments = []
 
     for i,text in enumerate(comments):
-        print(i)
+        #print(i)
         text = text.split()
         filtered_text = []
         for tok in text:
@@ -69,7 +69,11 @@ def lemmatize_test_text():
 def train_model():
     training_data = pd.read_pickle("../data/lemmatized_train_dataframe.pkl")
 
-    train_features = training_data[0]
+    train_features = []
+    for feature in training_data[0]:
+        feature = feature.lower()
+        print(feature)
+        train_features.append(feature)
 
     targets = []
     targets.append(training_data[1])
@@ -85,18 +89,28 @@ def train_model():
     pickle.dump(logis,open("../data/logistic_model.pkl","wb"))
 
 def predict():
-    comments = loadQuestionsFromTestDF()[1]
+    ids, comments = loadQuestionsFromTestDF()
     logis = LogisticRegressor()
+    final_submission = open("final.csv","w+")
 
     for i,text in enumerate(comments):
-        print(i)
-        text = str(lemmatize(text))
-        print(text)
-        logis.predict([text])
+        print(ids[i])
+        text = text.lower()
+        text = remove_stop_words([text.lower()])
+        text = lemmatize(text[0])
+        results = logis.predict([text])[0]
+
+        line = str(ids[i])+","
+        for res in results:
+            line += str(round(res,2))+","
+
+        line = line[0:len(line)-1]
+        print(line)
+        final_submission.write(line+"\n")
 
 #lemmatize_train_text()
-train_model()
-#predict()
+#train_model()
+predict()
 
 
 
