@@ -2,6 +2,7 @@ import numpy as np
 import nltk
 from multiprocessing import Pool
 import pickle
+import re
 
 
 from sklearn.linear_model import LogisticRegression
@@ -16,8 +17,22 @@ class LogisticRegressor(Classifier):
 
 
     def __init__(self):
-        self.logistic_classifier = pickle.load(open("../data/logistic_model.pkl","rb"))
+        self.logistic_classifier = pickle.load(open("data/logistic_model.pkl","rb"))
+        self.bad_terms = self.read_bad_terms()
 
+    def read_bad_terms(self):
+        bad_list = open("data/bad_words","r")
+        bad_list = str(bad_list.readlines()[0]).split(",")
+
+        bad_terms = []
+        for term in bad_list:
+            print(term)
+            bad_terms.append(term)
+
+        bad_terms = list(set(bad_list))
+        print(len(bad_terms))
+
+        return bad_terms
 
     def train_model(self,trained_features,targets):
         self.logistic_classifier = []
@@ -29,7 +44,7 @@ class LogisticRegressor(Classifier):
 
         for i,target in enumerate(targets):
             pipeline = Pipeline([
-                ('tfidf', TfidfVectorizer(max_features=50000)),
+                ('tfidf', TfidfVectorizer(vocabulary=self.bad_terms)),
                 ('logis', LogisticRegression()),
             ])
 
@@ -49,15 +64,18 @@ class LogisticRegressor(Classifier):
 
     def predict(self,test_features):
         test_outputs = []
+
         for test_vec in test_features:
+            predictions = []
             for i,logis in enumerate(self.logistic_classifier):
-                predictions = {}
                 pred = logis.predict_proba([test_vec])
-                print(pred)
-                predictions[i] = pred
-                test_outputs.append(predictions)
+                rounded_pred = pred[0][1]
+                rounded_pred = round(rounded_pred,2)
+                predictions.append(rounded_pred)
+            test_outputs.append(predictions)
 
         return test_outputs
 
 
-
+#logis = LogisticRegressor()
+#print(logis.read_bad_terms())
