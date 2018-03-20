@@ -21,7 +21,7 @@ class LogisticRegressor(Classifier):
         self.bad_terms = self.read_bad_terms()
 
     def read_bad_terms(self):
-        bad_list = open("data/bad_words","r")
+        bad_list = open("data//bad_words","r")
         bad_list = str(bad_list.readlines()[0]).split(",")
 
         bad_terms = []
