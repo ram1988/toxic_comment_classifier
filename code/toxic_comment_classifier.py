@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import spacy
 import pickle
+import re
 
 from nltk.corpus import stopwords
 
@@ -11,7 +12,7 @@ nlp = spacy.load("en")
 stopWords = set(stopwords.words('english'))
 
 def loadQuestionsFromTrainDF():
-    df = pd.read_csv("..\\data\\train.csv")
+    df = pd.read_csv("data\\train.csv")
     return df["comment_text"],df["toxic"],df["severe_toxic"],df["obscene"],df["threat"],df["insult"],df["identity_hate"]
 
 def loadQuestionsFromTestDF():
@@ -57,7 +58,16 @@ def lemmatize_train_text():
 
     lemmatized_comments = remove_stop_words(comments)
 
-    dataframe = (lemmatized_comments, toxic_sets, severe_toxic_sets, obscene_sets, threat_sets, insult_sets, identity_hate_sets)
+    print(len(lemmatized_comments))
+    comments = []
+    for comment in lemmatized_comments:
+        comment = str(comment).lower()
+        comment = re.sub(r'[^\w\s]', '', comment)
+        comments.append(comment)
+
+    print(len(comments))
+
+    dataframe = (comments, toxic_sets, severe_toxic_sets, obscene_sets, threat_sets, insult_sets, identity_hate_sets)
     pickle.dump(dataframe, open("lemmatized_train_dataframe.pkl","wb"))
 
 def lemmatize_test_text():
@@ -67,12 +77,11 @@ def lemmatize_test_text():
 
 #train without stopwords with non-lemmatized text
 def train_model():
-    training_data = pd.read_pickle("../data/lemmatized_train_dataframe.pkl")
+    training_data = pd.read_pickle("..//data//lemmatized_train_dataframe.pkl")
 
     train_features = []
     for feature in training_data[0]:
         feature = feature.lower()
-        print(feature)
         train_features.append(feature)
 
     targets = []
@@ -95,7 +104,8 @@ def predict():
 
     for i,text in enumerate(comments):
         print(ids[i])
-        text = text.lower()
+        text = str(text).lower()
+        text = re.sub(r'[^\w\s]', '', text)
         text = remove_stop_words([text.lower()])
         text = lemmatize(text[0])
         results = logis.predict([text])[0]
@@ -111,7 +121,6 @@ def predict():
 #lemmatize_train_text()
 #train_model()
 predict()
-
 
 
 
